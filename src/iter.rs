@@ -1,10 +1,8 @@
+use crate::LoadlessIteratorExt;
 use colored::Color;
 use std::io::{stdout, Write};
 
-pub const CLEAR_LINE: &str = "\r";
-pub trait LoadlessIteratorExt<'a>: Sized {
-    fn loadless(self) -> LoadlessIterator<'a, Self>;
-}
+const CLEAR_LINE: &str = "\r";
 
 pub struct LoadlessIterator<'a, Iterator> {
     iter: Iterator,

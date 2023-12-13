@@ -1,5 +1,5 @@
 mod iter {
-    use loadless::iter::LoadlessIteratorExt;
+    use loadless::LoadlessIteratorExt;
 
     #[test]
     fn iter_writes_stdout() {}
