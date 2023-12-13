@@ -1,37 +1,47 @@
+use colored::Color;
 use std::io::{stdout, Write};
 
 pub const CLEAR_LINE: &str = "\r";
 pub trait LoadlessIterExt<'a>: Sized {
     fn loadless(self) -> LoadlessIter<'a, Self>;
-    /// Build a loadless iterator with a custom write target.
+    /// Build a `loadless` iterator with a custom write target.
     /// ```
     /// let vec = vec![0, 10, 100];
-    /// let write_target = Vec::new();
-    /// for int in vec.iter().loadless_set_target(write_target);
+    /// let write_target: Vec<u8> = Vec::new();
+    /// for int in vec.iter().loadless_set_target(write_target) { /* */ }
+    /// println!("{}", String::from_utf8(write_target).unwrap());
     /// ```
     /// `write_target` now recieves all
-    fn loadless_write_target(self, target: &'a mut dyn Write) -> LoadlessIter<'a, Self>;
+    fn loadless_with_target(self, target: &'a mut dyn std::io::Write) -> LoadlessIter<'a, Self>;
 }
 
 pub struct LoadlessIter<'a, Iter> {
     iter: Iter,
     idx: usize,
-    remain: usize,
-    total: usize,
-    target: &'a mut dyn Write,
+    size: usize,
+    prog_ch: char,
+    prog_color: Option<Color>,
+    wrap_ch: Option<char>,
+    wrap_color: Option<Color>,
+    target: WriteTarget<'a>,
+}
+
+enum WriteTarget<'a> {
+    Stdout,
+    Custom(&'a mut dyn Write),
 }
 
 impl<'a, Iter: Iterator> LoadlessIterExt<'a> for Iter {
     fn loadless(self) -> LoadlessIter<'a, Self> {
-        return LoadlessIter::new(self, None);
+        return LoadlessIter::new(self, WriteTarget::Stdout);
     }
-    fn loadless_write_target(self, target: &'a mut dyn Write) -> LoadlessIter<'a, Self> {
-        return LoadlessIter::new(self, Some(target));
+    fn loadless_with_target(self, target: &'a mut dyn std::io::Write) -> LoadlessIter<'a, Self> {
+        return LoadlessIter::new(self, WriteTarget::Custom(target));
     }
 }
 
 impl<'a, Iter: Iterator> LoadlessIter<'a, Iter> {
-    pub fn new(iter: Iter, target: Option<&'a mut dyn Write>) -> Self {
+    pub fn new(iter: Iter, target: WriteTarget<'a>) -> Self {
         // TODO! Figure out a better way to get the estimated size of an iterator.
         let size_hint = iter.size_hint();
         let size: usize;
@@ -49,20 +59,20 @@ impl<'a, Iter: Iterator> LoadlessIter<'a, Iter> {
             target: target,
         };
     }
-    fn write_ln(&self) -> std::io::Result<()> {
-        write!(self.target)
+    fn write_ln(&self) -> Result<(), std::io::Error> {
+        match self.target {
+            WriteTarget::Stdout => write!(stdout(), "{CLEAR_LINE}"),
+            WriteTarget::Custom(wt) => {
+                write!(wt, "{CLEAR_LINE}")
+            }
+        }
     }
 }
 
 impl<'a, Iter: Iterator> Iterator for LoadlessIter<'a, Iter> {
     type Item = Iter::Item;
     fn next(&mut self) -> Option<Self::Item> {
-        let mut target: &mut dyn Write = &mut stdout();
-        if let Some(t) = &mut self.target {
-            target = *t;
-        }
         write!(
-            target,
             "{}[{}{}] {}%",
             CLEAR_LINE,
             "▓".repeat(self.idx),
@@ -79,5 +89,3 @@ impl<'a, Iter: Iterator> Iterator for LoadlessIter<'a, Iter> {
         return self.iter.next();
     }
 }
-
-fn write_target(target: &mut dyn Write) -> std::io::Result<()> {}
