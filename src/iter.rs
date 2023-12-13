@@ -2,27 +2,20 @@ use colored::Color;
 use std::io::{stdout, Write};
 
 pub const CLEAR_LINE: &str = "\r";
-pub trait LoadlessIterExt<'a>: Sized {
-    fn loadless(self) -> LoadlessIter<'a, Self>;
-    /// Build a `loadless` iterator with a custom write target.
-    /// ```
-    /// let vec = vec![0, 10, 100];
-    /// let write_target: Vec<u8> = Vec::new();
-    /// for int in vec.iter().loadless_set_target(write_target) { /* */ }
-    /// println!("{}", String::from_utf8(write_target).unwrap());
-    /// ```
-    /// `write_target` now recieves all
-    fn loadless_with_target(self, target: &'a mut dyn std::io::Write) -> LoadlessIter<'a, Self>;
+pub trait LoadlessIteratorExt<'a>: Sized {
+    fn loadless(self) -> LoadlessIterator<'a, Self>;
 }
 
-pub struct LoadlessIter<'a, Iter> {
-    iter: Iter,
+pub struct LoadlessIterator<'a, Iterator> {
+    iter: Iterator,
     idx: usize,
     size: usize,
     prog_ch: char,
     prog_color: Option<Color>,
-    wrap_ch: Option<char>,
+    /// Array representing characters that wrap a loader. [0] is the starting wrapper, [1] is the ending wrapper.
+    wrap_ch: [char; 2],
     wrap_color: Option<Color>,
+    /// Write target, by default is the Stdout.
     target: WriteTarget<'a>,
 }
 
@@ -31,61 +24,76 @@ enum WriteTarget<'a> {
     Custom(&'a mut dyn Write),
 }
 
-impl<'a, Iter: Iterator> LoadlessIterExt<'a> for Iter {
-    fn loadless(self) -> LoadlessIter<'a, Self> {
-        return LoadlessIter::new(self, WriteTarget::Stdout);
-    }
-    fn loadless_with_target(self, target: &'a mut dyn std::io::Write) -> LoadlessIter<'a, Self> {
-        return LoadlessIter::new(self, WriteTarget::Custom(target));
+impl<'a, Iter: Iterator> LoadlessIteratorExt<'a> for Iter {
+    fn loadless(self) -> LoadlessIterator<'a, Self> {
+        return LoadlessIterator::default(self);
     }
 }
 
-impl<'a, Iter: Iterator> LoadlessIter<'a, Iter> {
-    pub fn new(iter: Iter, target: WriteTarget<'a>) -> Self {
-        // TODO! Figure out a better way to get the estimated size of an iterator.
-        let size_hint = iter.size_hint();
-        let size: usize;
-        if let Some(val) = size_hint.1 {
-            size = val;
-        } else {
-            size = size_hint.0;
+impl<'a, Iter: Iterator> LoadlessIterator<'a, Iter> {
+    pub fn default(iter: Iter) -> Self {
+        let size;
+        // Matches on the iterators estimated upper or lower bounds for the iterator.
+        match iter.size_hint().1 {
+            Some(s) => size = s,
+            None => size = iter.size_hint().0,
         }
-        // TODO! ^
-        return LoadlessIter {
+        return LoadlessIterator {
             iter,
             idx: 0,
-            remain: 10,
-            total: 10,
-            target: target,
+            size,
+            prog_ch: '▓',
+            prog_color: None,
+            wrap_ch: ['[', ']'],
+            wrap_color: None,
+            target: WriteTarget::Stdout,
         };
     }
-    fn write_ln(&self) -> Result<(), std::io::Error> {
-        match self.target {
-            WriteTarget::Stdout => write!(stdout(), "{CLEAR_LINE}"),
+
+    pub fn write_target(mut self, target: &'a mut dyn Write) -> Self {
+        self.target = WriteTarget::Custom(target);
+        return self;
+    }
+
+    fn write_ln(&mut self) -> Result<(), std::io::Error> {
+        let wrap_color: String;
+        let prog_color;
+        match self.wrap_color {
+            Some(color) => wrap_color = color.to_fg_str().into(),
+            None => wrap_color = "".to_string(),
+        }
+        match self.prog_color {
+            Some(color) => prog_color = color.to_fg_str().into(),
+            None => prog_color = "".to_string(),
+        }
+        let output = format!(
+            "{CLEAR_LINE}{}{}{}{}{}{}{}{}",
+            &wrap_color,
+            self.wrap_ch[0],
+            &prog_color,
+            self.prog_ch.to_string().repeat(self.idx),
+            " ".to_string().repeat(self.size - self.idx),
+            &wrap_color,
+            self.wrap_ch[1],
+            if self.idx == self.size { "\n" } else { "" }
+        );
+        match &mut self.target {
+            WriteTarget::Stdout => {
+                write!(stdout(), "{output}")?;
+            }
             WriteTarget::Custom(wt) => {
-                write!(wt, "{CLEAR_LINE}")
+                write!(wt, "{output}")?;
             }
         }
+        self.idx += 1;
+        return Ok(());
     }
 }
 
-impl<'a, Iter: Iterator> Iterator for LoadlessIter<'a, Iter> {
+impl<'a, Iter: Iterator> Iterator for LoadlessIterator<'a, Iter> {
     type Item = Iter::Item;
     fn next(&mut self) -> Option<Self::Item> {
-        write!(
-            "{}[{}{}] {}%",
-            CLEAR_LINE,
-            "▓".repeat(self.idx),
-            " ".repeat(self.remain),
-            ((self.idx as f64 / self.total as f64) * 100 as f64) as usize,
-        )
-        .expect("Write target of LoadlessIterator is invalid.");
-        if self.remain > 0 {
-            self.remain -= 1;
-        } else {
-            write!(target, "\n");
-        }
-        self.idx += 1;
+        let _ = self.write_ln();
         return self.iter.next();
     }
 }
