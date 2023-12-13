@@ -2,7 +2,14 @@ mod iter {
     use loadless::LoadlessIteratorExt;
 
     #[test]
-    fn iter_writes_stdout() {}
+    #[ignore]
+    fn iter_writes_stdout_expensive() {
+        let test = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        for _ in test.iter().loadless() {
+            std::thread::sleep(std::time::Duration::from_millis(1000));
+        }
+    }
+
     #[test]
     fn iter_with_default_works() {
         let test = vec!['a', 'b', 'c', 'd', 'e'];
