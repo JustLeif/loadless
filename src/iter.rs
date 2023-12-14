@@ -78,6 +78,9 @@ impl<'a, Iter: Iterator> LoadlessIterator<'a, Iter> {
             Some(color) => prog_color = color.to_fg_str().into(),
             None => prog_color = "".to_string(),
         }
+        let space_count = self
+            .prog_len
+            .checked_sub(self.idx / (self.size / self.prog_len));
         let output = format!(
             "{CLEAR_LINE}{}{}{}{}{}{}{}{}",
             &wrap_color,
@@ -87,7 +90,11 @@ impl<'a, Iter: Iterator> LoadlessIterator<'a, Iter> {
                 .to_string()
                 .repeat(self.idx / (self.size / self.prog_len)),
             " ".to_string()
-                .repeat(self.prog_len - (self.idx / (self.size / self.prog_len))),
+                .repeat(if let Some(space_count) = space_count {
+                    space_count as usize
+                } else {
+                    0 as usize
+                }),
             &wrap_color,
             self.wrap_ch[1],
             if self.idx == self.size { "\n" } else { "" }
