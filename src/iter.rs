@@ -4,6 +4,7 @@ use std::io::{stdout, Write};
 
 const CLEAR_LINE: &str = "\r";
 
+/// Iterator abstraction to handle `loadless` progress bar writing and styling.
 pub struct LoadlessIterator<'a, Iterator> {
     /// Underlying iterator behind the loader abstraction.
     iter: Iterator,
@@ -45,7 +46,7 @@ impl<'a, Iter: Iterator> LoadlessIterator<'a, Iter> {
             None => size = iter.size_hint().0,
         }
         let mut prog_len: usize = size;
-        // By default, the progress bar
+        // By default, the progress bar has a length of 10.
         if size > 10 {
             prog_len = 10;
         }
