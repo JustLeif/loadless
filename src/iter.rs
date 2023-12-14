@@ -102,7 +102,7 @@ impl<'a, Iter: Iterator> LoadlessIterator<'a, Iter> {
         );
         match &mut self.target {
             WriteTarget::Stdout => {
-                write!(stdout(), "{output}")?;
+                println!("{output}");
             }
             WriteTarget::Custom(wt) => {
                 write!(wt, "{output}")?;
