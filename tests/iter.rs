@@ -22,6 +22,16 @@ mod iter {
     }
 
     #[test]
+    fn iter_with_default_above_10_works() {
+        let test = vec![
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+        ];
+        let mut target = Vec::new();
+        for _ in test.iter().loadless().write_target(&mut target) {}
+        assert_eq!(String::from_utf8_lossy(&target), "\r[          ]\r[          ]\r[▓         ]\r[▓         ]\r[▓▓        ]\r[▓▓        ]\r[▓▓▓       ]\r[▓▓▓       ]\r[▓▓▓▓      ]\r[▓▓▓▓      ]\r[▓▓▓▓▓     ]\r[▓▓▓▓▓     ]\r[▓▓▓▓▓▓    ]\r[▓▓▓▓▓▓    ]\r[▓▓▓▓▓▓▓   ]\r[▓▓▓▓▓▓▓   ]\r[▓▓▓▓▓▓▓▓  ]\r[▓▓▓▓▓▓▓▓  ]\r[▓▓▓▓▓▓▓▓▓ ]\r[▓▓▓▓▓▓▓▓▓ ]\r[▓▓▓▓▓▓▓▓▓▓]\n".to_string());
+    }
+
+    #[test]
     fn iter_mut_with_default_works() {
         let mut test = vec![10, 10, 10, 10];
         let mut target = Vec::new();

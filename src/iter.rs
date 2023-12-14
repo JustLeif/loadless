@@ -5,13 +5,21 @@ use std::io::{stdout, Write};
 const CLEAR_LINE: &str = "\r";
 
 pub struct LoadlessIterator<'a, Iterator> {
+    /// Underlying iterator behind the loader abstraction.
     iter: Iterator,
+    /// Current index of the progress bar.
     idx: usize,
+    /// Total indexes to traverse (likely total number of iterations of the iterator).
     size: usize,
+    /// Length of the progress bar (number of total characters).
+    prog_len: usize,
+    /// Character that gets displayed to increment the progress of the loader.
     prog_ch: char,
+    /// Color of the progress character.
     prog_color: Option<Color>,
     /// Array representing characters that wrap a loader. [0] is the starting wrapper, [1] is the ending wrapper.
     wrap_ch: [char; 2],
+    /// Color of the progress bar wrapper.
     wrap_color: Option<Color>,
     /// Write target, by default is the Stdout.
     target: WriteTarget<'a>,
@@ -36,10 +44,16 @@ impl<'a, Iter: Iterator> LoadlessIterator<'a, Iter> {
             Some(s) => size = s,
             None => size = iter.size_hint().0,
         }
+        let mut prog_len: usize = size;
+        // By default, the progress bar
+        if size > 10 {
+            prog_len = 10;
+        }
         return LoadlessIterator {
             iter,
             idx: 0,
             size,
+            prog_len,
             prog_ch: '▓',
             prog_color: None,
             wrap_ch: ['[', ']'],
@@ -69,8 +83,11 @@ impl<'a, Iter: Iterator> LoadlessIterator<'a, Iter> {
             &wrap_color,
             self.wrap_ch[0],
             &prog_color,
-            self.prog_ch.to_string().repeat(self.idx),
-            " ".to_string().repeat(self.size - self.idx),
+            self.prog_ch
+                .to_string()
+                .repeat(self.idx / (self.size / self.prog_len)),
+            " ".to_string()
+                .repeat(self.prog_len - (self.idx / (self.size / self.prog_len))),
             &wrap_color,
             self.wrap_ch[1],
             if self.idx == self.size { "\n" } else { "" }
