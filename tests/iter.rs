@@ -6,7 +6,7 @@ mod iter {
     fn iter_writes_stdout_expensive() {
         let test = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
         for _ in test.iter().loadless() {
-            std::thread::sleep(std::time::Duration::from_millis(1000));
+            std::thread::sleep(std::time::Duration::from_millis(100));
         }
     }
 
@@ -17,7 +17,7 @@ mod iter {
         for _ in test.iter().loadless().write_target(&mut target) {}
         assert_eq!(
             String::from_utf8_lossy(&target),
-            "\r[     ]\r[▓    ]\r[▓▓   ]\r[▓▓▓  ]\r[▓▓▓▓ ]\r[▓▓▓▓▓]\n"
+            "\u{1b}[1F\u{1b}[2K[     ]\n\u{1b}[1F\u{1b}[2K[▓    ]\n\u{1b}[1F\u{1b}[2K[▓▓   ]\n\u{1b}[1F\u{1b}[2K[▓▓▓  ]\n\u{1b}[1F\u{1b}[2K[▓▓▓▓ ]\n\u{1b}[1F\u{1b}[2K[▓▓▓▓▓]\n"
         );
     }
 
@@ -28,7 +28,7 @@ mod iter {
         ];
         let mut target = Vec::new();
         for _ in test.iter().loadless().write_target(&mut target) {}
-        assert_eq!(String::from_utf8_lossy(&target), "\r[          ]\r[          ]\r[▓         ]\r[▓         ]\r[▓▓        ]\r[▓▓        ]\r[▓▓▓       ]\r[▓▓▓       ]\r[▓▓▓▓      ]\r[▓▓▓▓      ]\r[▓▓▓▓▓     ]\r[▓▓▓▓▓     ]\r[▓▓▓▓▓▓    ]\r[▓▓▓▓▓▓    ]\r[▓▓▓▓▓▓▓   ]\r[▓▓▓▓▓▓▓   ]\r[▓▓▓▓▓▓▓▓  ]\r[▓▓▓▓▓▓▓▓  ]\r[▓▓▓▓▓▓▓▓▓ ]\r[▓▓▓▓▓▓▓▓▓ ]\r[▓▓▓▓▓▓▓▓▓▓]\n".to_string());
+        assert_eq!(String::from_utf8_lossy(&target), "\u{1b}[1F\u{1b}[2K[          ]\n\u{1b}[1F\u{1b}[2K[          ]\n\u{1b}[1F\u{1b}[2K[▓         ]\n\u{1b}[1F\u{1b}[2K[▓         ]\n\u{1b}[1F\u{1b}[2K[▓▓        ]\n\u{1b}[1F\u{1b}[2K[▓▓        ]\n\u{1b}[1F\u{1b}[2K[▓▓▓       ]\n\u{1b}[1F\u{1b}[2K[▓▓▓       ]\n\u{1b}[1F\u{1b}[2K[▓▓▓▓      ]\n\u{1b}[1F\u{1b}[2K[▓▓▓▓      ]\n\u{1b}[1F\u{1b}[2K[▓▓▓▓▓     ]\n\u{1b}[1F\u{1b}[2K[▓▓▓▓▓     ]\n\u{1b}[1F\u{1b}[2K[▓▓▓▓▓▓    ]\n\u{1b}[1F\u{1b}[2K[▓▓▓▓▓▓    ]\n\u{1b}[1F\u{1b}[2K[▓▓▓▓▓▓▓   ]\n\u{1b}[1F\u{1b}[2K[▓▓▓▓▓▓▓   ]\n\u{1b}[1F\u{1b}[2K[▓▓▓▓▓▓▓▓  ]\n\u{1b}[1F\u{1b}[2K[▓▓▓▓▓▓▓▓  ]\n\u{1b}[1F\u{1b}[2K[▓▓▓▓▓▓▓▓▓ ]\n\u{1b}[1F\u{1b}[2K[▓▓▓▓▓▓▓▓▓ ]\n\u{1b}[1F\u{1b}[2K[▓▓▓▓▓▓▓▓▓▓]\n".to_string());
     }
 
     #[test]
@@ -36,7 +36,7 @@ mod iter {
         let test = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
         let mut target = Vec::new();
         for _ in test.iter().loadless().write_target(&mut target) {}
-        assert_eq!(String::from_utf8_lossy(&target), "\r[          ]\r[▓         ]\r[▓▓        ]\r[▓▓▓       ]\r[▓▓▓▓      ]\r[▓▓▓▓▓     ]\r[▓▓▓▓▓▓    ]\r[▓▓▓▓▓▓▓   ]\r[▓▓▓▓▓▓▓▓  ]\r[▓▓▓▓▓▓▓▓▓ ]\r[▓▓▓▓▓▓▓▓▓▓]\r[▓▓▓▓▓▓▓▓▓▓▓]\r[▓▓▓▓▓▓▓▓▓▓▓▓]\n".to_string());
+        assert_eq!(String::from_utf8_lossy(&target), "\u{1b}[1F\u{1b}[2K[          ]\n\u{1b}[1F\u{1b}[2K[▓         ]\n\u{1b}[1F\u{1b}[2K[▓▓        ]\n\u{1b}[1F\u{1b}[2K[▓▓▓       ]\n\u{1b}[1F\u{1b}[2K[▓▓▓▓      ]\n\u{1b}[1F\u{1b}[2K[▓▓▓▓▓     ]\n\u{1b}[1F\u{1b}[2K[▓▓▓▓▓▓    ]\n\u{1b}[1F\u{1b}[2K[▓▓▓▓▓▓▓   ]\n\u{1b}[1F\u{1b}[2K[▓▓▓▓▓▓▓▓  ]\n\u{1b}[1F\u{1b}[2K[▓▓▓▓▓▓▓▓▓ ]\n\u{1b}[1F\u{1b}[2K[▓▓▓▓▓▓▓▓▓▓]\n\u{1b}[1F\u{1b}[2K[▓▓▓▓▓▓▓▓▓▓▓]\n\u{1b}[1F\u{1b}[2K[▓▓▓▓▓▓▓▓▓▓▓▓]\n".to_string());
     }
 
     #[test]
@@ -48,7 +48,7 @@ mod iter {
         }
         assert_eq!(
             String::from_utf8_lossy(&target),
-            "\r[    ]\r[▓   ]\r[▓▓  ]\r[▓▓▓ ]\r[▓▓▓▓]\n".to_string()
+            "\u{1b}[1F\u{1b}[2K[    ]\n\u{1b}[1F\u{1b}[2K[▓   ]\n\u{1b}[1F\u{1b}[2K[▓▓  ]\n\u{1b}[1F\u{1b}[2K[▓▓▓ ]\n\u{1b}[1F\u{1b}[2K[▓▓▓▓]\n".to_string()
         );
         assert_eq!(test, vec![11, 11, 11, 11]);
     }

@@ -1,8 +1,9 @@
 use crate::LoadlessIteratorExt;
 use colored::Color;
-use std::io::Write;
+use std::io::{stdout, Write};
 
-const CLEAR_LINE: &str = "\r";
+const MOVE_BEGINNING_LINE: &str = "\x1b[1F";
+const CLEAR_LINE: &str = "\x1b[2K";
 
 /// Iterator abstraction to handle `loadless` progress bar writing and styling.
 pub struct LoadlessIterator<'a, Iterator> {
@@ -83,7 +84,7 @@ impl<'a, Iter: Iterator> LoadlessIterator<'a, Iter> {
             .prog_len
             .checked_sub(self.idx / (self.size / self.prog_len));
         let output = format!(
-            "{CLEAR_LINE}{}{}{}{}{}{}{}{}",
+            "{MOVE_BEGINNING_LINE}{CLEAR_LINE}{}{}{}{}{}{}{}",
             &wrap_color,
             self.wrap_ch[0],
             &prog_color,
@@ -98,14 +99,13 @@ impl<'a, Iter: Iterator> LoadlessIterator<'a, Iter> {
                 }),
             &wrap_color,
             self.wrap_ch[1],
-            if self.idx == self.size { "\n" } else { "" }
         );
         match &mut self.target {
             WriteTarget::Stdout => {
-                print!("{output}");
+                writeln!(stdout(), "{output}")?;
             }
             WriteTarget::Custom(wt) => {
-                write!(wt, "{output}")?;
+                writeln!(wt, "{output}")?;
             }
         }
         self.idx += 1;
