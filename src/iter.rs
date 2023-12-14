@@ -1,6 +1,6 @@
 use crate::LoadlessIteratorExt;
 use colored::Color;
-use std::io::{stdout, Write};
+use std::io::Write;
 
 const CLEAR_LINE: &str = "\r";
 
@@ -102,7 +102,7 @@ impl<'a, Iter: Iterator> LoadlessIterator<'a, Iter> {
         );
         match &mut self.target {
             WriteTarget::Stdout => {
-                println!("{output}");
+                print!("{output}");
             }
             WriteTarget::Custom(wt) => {
                 write!(wt, "{output}")?;
