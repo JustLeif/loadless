@@ -1,5 +1,12 @@
 [package]
 name = "loadless"
+authors = ["Leif Elliott <leif@elliottnet.com>"]
+description = "Write less loading (progress bar) code in Rust."
+readme = "README.md"
+repository = "https://github.com/JustLeif/loadless"
+license-file = "LICENSE"
+keywords = ["progress bar", "loading bar"]
+categories = ["command-line-utilities"]
 version = "0.1.0"
 edition = "2021"
 
