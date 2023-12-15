@@ -1,2 +1,4 @@
-# loadless
-Write less loading code.
+# loadless :hourglass_flowing_sand:
+Write less loading (progress bar) code in Rust.
+
+## 

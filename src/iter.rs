@@ -84,7 +84,12 @@ impl<'a, Iter: Iterator> LoadlessIterator<'a, Iter> {
             .prog_len
             .checked_sub(self.idx / (self.size / self.prog_len));
         let output = format!(
-            "{MOVE_BEGINNING_LINE}{CLEAR_LINE}{}{}{}{}{}{}{}",
+            "{}{}{}{}{}{}{}{}",
+            if self.idx != 0 {
+                format!("{MOVE_BEGINNING_LINE}{CLEAR_LINE}")
+            } else {
+                "".to_string()
+            },
             &wrap_color,
             self.wrap_ch[0],
             &prog_color,
